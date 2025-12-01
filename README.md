@@ -35,6 +35,8 @@ Or open in Zed and run cells interactively with `ctrl-shift-enter`.
 
 ## Progress
 
+**Note:** Advent of Code 2025 has 12 days instead of the usual 25.
+
 | Day | Part 1 | Part 2 | Notes |
 |-----|--------|--------|-------|
 | 01  | ✅     | ✅     | Secret Entrance - Circular dial rotations |
@@ -49,18 +51,5 @@ Or open in Zed and run cells interactively with `ctrl-shift-enter`.
 | 10  | ⬜     | ⬜     |       |
 | 11  | ⬜     | ⬜     |       |
 | 12  | ⬜     | ⬜     |       |
-| 13  | ⬜     | ⬜     |       |
-| 14  | ⬜     | ⬜     |       |
-| 15  | ⬜     | ⬜     |       |
-| 16  | ⬜     | ⬜     |       |
-| 17  | ⬜     | ⬜     |       |
-| 18  | ⬜     | ⬜     |       |
-| 19  | ⬜     | ⬜     |       |
-| 20  | ⬜     | ⬜     |       |
-| 21  | ⬜     | ⬜     |       |
-| 22  | ⬜     | ⬜     |       |
-| 23  | ⬜     | ⬜     |       |
-| 24  | ⬜     | ⬜     |       |
-| 25  | ⬜     | ⬜     |       |
 
 Legend: ⬜ Not started | 🟡 In progress | ✅ Complete
