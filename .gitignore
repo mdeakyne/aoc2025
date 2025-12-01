@@ -1,0 +1,9 @@
+resources/
+__pycache__/
+*.pyc
+.DS_Store
+*.ipynb_checkpoints/
+.pytest_cache/
+*.egg-info/
+dist/
+build/
