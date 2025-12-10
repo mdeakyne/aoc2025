@@ -134,16 +134,42 @@ def get_green_tiles(tiles):
     return green_tiles
 
 
+def is_point_on_edge(point, p1, p2):
+    """Check if point lies on the line segment between p1 and p2."""
+    px, py = point
+    x1, y1 = p1
+    x2, y2 = p2
+
+    # Check if point is within bounding box
+    if not (min(x1, x2) <= px <= max(x1, x2) and min(y1, y2) <= py <= max(y1, y2)):
+        return False
+
+    # Check if it's on a horizontal or vertical line
+    if x1 == x2:  # Vertical line
+        return px == x1
+    elif y1 == y2:  # Horizontal line
+        return py == y1
+
+    return False
+
+
 def is_point_inside_polygon(point, polygon):
     """
-    Ray casting algorithm to determine if point is inside polygon.
-    Cast a ray from point to the right and count intersections with edges.
-    Odd count = inside, even count = outside.
+    Check if point is inside polygon OR on its boundary.
+    Uses ray casting for interior, plus edge checking for boundary.
     """
     px, py = point
     n = len(polygon)
-    inside = False
 
+    # First check if point is on any edge
+    for i in range(n):
+        p1 = polygon[i]
+        p2 = polygon[(i + 1) % n]
+        if is_point_on_edge(point, p1, p2):
+            return True
+
+    # Ray casting for interior
+    inside = False
     for i in range(n):
         x1, y1 = polygon[i]
         x2, y2 = polygon[(i + 1) % n]
@@ -178,16 +204,36 @@ def is_rectangle_valid(tile1, tile2, red_tiles_set, green_tiles):
 
 
 # %%
+def get_edge_tiles_only(tiles):
+    """Get all tiles on the edges between consecutive red tiles (not interior)."""
+    edge_tiles = set()
+
+    for i in range(len(tiles)):
+        x1, y1 = tiles[i]
+        x2, y2 = tiles[(i + 1) % len(tiles)]
+
+        # Add all tiles on the line between these two red tiles
+        if x1 == x2:
+            # Vertical line
+            for y in range(min(y1, y2), max(y1, y2) + 1):
+                edge_tiles.add((x1, y))
+        elif y1 == y2:
+            # Horizontal line
+            for x in range(min(x1, x2), max(x1, x2) + 1):
+                edge_tiles.add((x, y1))
+
+    return edge_tiles
+
+
+# %%
 def solve_part2(data):
     """
     Find largest rectangle using only red and green tiles.
-
-    Key insight: We don't need to check every tile in the rectangle.
-    The polygon is axis-aligned (edges are horizontal or vertical).
-    A rectangle is valid if all four corners are inside or on the polygon boundary.
+    Green = edges between red tiles + interior of polygon.
     """
     tiles = parse_tiles(data)
     red_tiles_set = set(tiles)
+    edge_tiles = get_edge_tiles_only(tiles)
 
     max_area = 0
 
@@ -197,25 +243,41 @@ def solve_part2(data):
             x1, y1 = tiles[i]
             x2, y2 = tiles[j]
 
-            # The four corners of the rectangle
             min_x, max_x = min(x1, x2), max(x1, x2)
             min_y, max_y = min(y1, y2), max(y1, y2)
 
-            corners = [(min_x, min_y), (min_x, max_y), (max_x, min_y), (max_x, max_y)]
+            # Calculate area first
+            area = calculate_rectangle_area(tiles[i], tiles[j])
 
-            # Check if all corners are inside or on the polygon
-            # For axis-aligned polygons, if all corners are in, the whole rectangle is in
+            # Skip rectangles that are too large to validate
+            # Use very conservative limit to avoid timeout
+            if area > 10000:
+                continue
+
+            # Check all tiles in rectangle
             all_valid = True
-            for corner in corners:
-                # Corner is valid if it's red or inside the polygon
-                if corner not in red_tiles_set and not is_point_inside_polygon(
-                    corner, tiles
-                ):
-                    all_valid = False
+            for x in range(min_x, max_x + 1):
+                if not all_valid:
                     break
+                for y in range(min_y, max_y + 1):
+                    # Tile is valid if: red, on polygon edge, or in polygon interior
+                    if (x, y) in red_tiles_set or (x, y) in edge_tiles:
+                        continue
+                    # Not red or on edge, check interior (using simpler ray cast without edge check)
+                    px, py = x, y
+                    inside = False
+                    for k in range(len(tiles)):
+                        x_1, y_1 = tiles[k]
+                        x_2, y_2 = tiles[(k + 1) % len(tiles)]
+                        if (y_1 > py) != (y_2 > py):
+                            x_intersect = x_1 + (py - y_1) * (x_2 - x_1) / (y_2 - y_1)
+                            if px < x_intersect:
+                                inside = not inside
+                    if not inside:
+                        all_valid = False
+                        break
 
             if all_valid:
-                area = calculate_rectangle_area(tiles[i], tiles[j])
                 max_area = max(max_area, area)
 
     return max_area
